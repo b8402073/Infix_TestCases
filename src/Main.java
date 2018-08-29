@@ -89,6 +89,19 @@ public class Main {
         }
         return true;
     }
+    public static void SetByBigInteger(BigInteger that,int[] dest,int Slot) {        
+        //先全部歸0
+        for (int i=0; i<Slot; i++) {
+            dest[i]=0;
+        }
+        //依照BigInteger的標記設定dest陣列
+        for (int i=0; i<Slot; i++) {
+            //System.out.print(that.testBit(i)+" ");   //testBit的參數是從LSBit開始算
+            if (that.testBit(i)) {
+                ++dest[i];
+            }
+        }        
+    }
     public static void step2(String line) {
         final int SZ=InputSize;
         final int MaxP=SZ-1;
@@ -98,30 +111,18 @@ public class Main {
         int[] L=new int[Slot];
         BigInteger Bmaxp=BigInteger.valueOf(MaxP);        
         BigInteger BSlot=BigInteger.valueOf(Slot);        
-        BigInteger Limit= BigInteger.valueOf(Slot); Limit=Limit.multiply(Limit);
-        for (BigInteger iter1=BigInteger.ZERO; iter1.compareTo(Limit)==(-1); iter1=iter1.add(BigInteger.ONE)) {            
-            BigInteger Hand1=new BigInteger(iter1.toByteArray());
-            ClearZero(L,MaxP); ClearZero(index,MaxP);
-            for (int i=0; i<MaxP; i++) {
-                index[i]= Hand1.mod(BSlot).intValue();
-                Hand1=Hand1.divide(BSlot);
-            }
-            for (int i=0; i<MaxP; i++) {
-                L[index[i]]++;
-            }
-            for (BigInteger iter2=BigInteger.ZERO; iter2.compareTo(Limit)==(-1); iter2=iter2.add(BigInteger.ONE)) {
-                BigInteger Hand2=new BigInteger(iter2.toByteArray());
-                ClearZero(R,MaxP); ClearZero(index,MaxP);
-                for (int i=0; i<MaxP; i++) {
-                    index[i]=Hand2.mod(BSlot).intValue();
-                    Hand2=Hand2.divide(BSlot);
+        BigInteger Limit= BigInteger.valueOf(2).pow(Slot);
+        for (BigInteger iter1=BigInteger.ONE; iter1.compareTo(Limit)==(-1); iter1=iter1.add(BigInteger.ONE)) { 
+            if (iter1.bitCount()==MaxP) {
+                SetByBigInteger(iter1,L,Slot);
+                for (BigInteger iter2=BigInteger.ONE; iter2.compareTo(Limit)==(-1); iter2=iter2.add(BigInteger.ONE)) {
+                    if (iter2.bitCount()==MaxP) {
+                        SetByBigInteger(iter2,R,Slot);
+                        if (Valid(L,R))
+                            step2_a_line(line,L,R);
+                    }
                 }
-                for (int i=0; i<MaxP; i++) {
-                    R[index[i]]++;
-                }
-                if (Valid(L,R))
-                    step2_a_line(line,L,R);
-            }                        
+            }                                        
         }
         
 
