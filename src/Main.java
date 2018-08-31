@@ -1,4 +1,5 @@
 
+import java.io.FileWriter;
 import java.math.BigInteger;
 import java.util.Stack;
 import java.util.Vector;
@@ -15,11 +16,12 @@ import java.util.Vector;
  */
 public class Main {
     public static Vector<String> Result1=new Vector<String>();
+    public static Vector<String> Result2=new Vector<String>();
     public final static char Operand[]={'A','B','C','D','E','F','G','H','I' ,'J','K','L','M'};
     public final static char Operator[]={'$','*','/','+','-'};
     public final static int  InputSize=5;
-    public static int MaxP=InputSize-1;            
-    public static int Slot=InputSize+1;      
+//    public static int MaxP=InputSize-1;            
+//    public static int Slot=InputSize+1;      
     private static void step1_a_line(Vector<String> dest,int[] index,char[] Letter,char[] OP,int SZ) {
         String ret="";
         for (int i=0; i<SZ-1; i++) {
@@ -50,7 +52,8 @@ public class Main {
             dest[i]=0;
         }
     }
-    public static void step2_a_line(String line,int[] L,int[] R) {                
+    public static void step2_a_line(String line,int[] L,int[] R,int InputSize,int MaxP) {
+        final int Slot=InputSize+1;
         String ret="";
         for (int i=0,m=0; i<=InputSize; i++) {
             if (i==0) {
@@ -60,6 +63,7 @@ public class Main {
             }else if (i==InputSize) {
                 for (int x=0; x<R[Slot-1]; x++) ret+=(")");
                 System.out.println(ret);
+                Result2.add(ret);
                 return;
             }else {
                 for (int x=0; x<R[i]; x++) ret+=(")");
@@ -72,9 +76,9 @@ public class Main {
         System.out.println("BAD_EXECUTION");
         System.exit(0);
     }
-    private static boolean Valid(int[] L,int[]  R)  {
-        final int SZ=InputSize;        
-        final int Slot=SZ+1;  
+    private static boolean Valid(int[] L,int[]  R,int InputSize)  {        
+        final int Slot=InputSize+1;
+        final int SZ=InputSize;
         if (L[Slot-1]>0) return false;
         if (R[0]>0) return false;
         
@@ -130,14 +134,14 @@ public class Main {
         }
         return false;
     }
-    private static void action(int[] hand,Vector<int[]> Collect) {
+    private static void action(int[] hand,Vector<int[]> Collect,int InputSize,int MaxP) {
         /* for debugging
         for (int i=0; i<MaxP; i++) {
             System.out.print(""+hand[i]+" ");
         }
         System.out.println();        
         */
-        
+        final int Slot=InputSize+1;        
         int[] dest=new int[Slot];
         ClearZero(dest,Slot);
         for (int i=0; i<MaxP; i++) {
@@ -146,31 +150,32 @@ public class Main {
         if (!VectorContain(Collect,dest))
             Collect.add(dest);
     }
-    private static void backtrack(int dim,int[] hand,Vector<int[]> Collect) {
+    private static void backtrack(int dim,int[] hand,Vector<int[]> Collect,int InputSize,int MaxP) {
+        final int Slot=InputSize+1;
         if (dim==MaxP) {
-            action(hand,Collect);
+            action(hand,Collect,InputSize,MaxP);
             return;
         }
         for (int i=0; i<Slot; i++) {
             hand[dim]=i;
-            backtrack(dim+1,hand,Collect);
+            backtrack(dim+1,hand,Collect,InputSize,MaxP);
         }
     }
-    public static void step2(String line) {
+    public static void step2(String line,int InputSize,int MaxP) {
 
         int[] index=new int[MaxP];
         Vector<int[]> CollectL=new Vector<int[]>();
         Vector<int[]> CollectR=new Vector<int[]>();
         ClearZero(index,MaxP);
-        backtrack(0,index,CollectL);
-        backtrack(0,index,CollectR);
+        backtrack(0,index,CollectL,InputSize,MaxP);
+        backtrack(0,index,CollectR,InputSize,MaxP);
         for (int i=0; i<CollectL.size(); i++) {
             int[] L=CollectL.get(i);            
             for (int j=0; j<CollectR.size(); j++) {
                 int[] R=CollectR.get(j);
-                if (Valid(L,R)) {
+                if (Valid(L,R,InputSize)) {
                     System.out.println("i="+i+"  j="+j);
-                    step2_a_line(line,L,R);                                
+                    step2_a_line(line,L,R,InputSize,MaxP);                                
                 }
             }
         }
@@ -181,11 +186,29 @@ public class Main {
         
         
     }
-    public static void main(String[] args) {
-        //step1();
+    public static void main(String[] args) throws Exception{
+        FileWriter fw=new FileWriter("Infix5.txt");
+        step1();
+        for (String line: Result1) {
+           System.out.println(line);
+           fw.write(line+"\r\n");          
+        }
+        fw.flush();           
+        
+        for (String line:Result1) {
+            for (int P=1; P<=InputSize-1; P++) {
+                step2(line,InputSize,P);
+            }
+        }
+        for (String line:Result2) {
+            fw.write(line+"\r\n");
+        }
+        
+        fw.close();
         //step2("A+B+C");
-        Main.MaxP=1;
-        step2("A+B+C+D+E");
+        
+        //step2("A+B+C+D+E",5,1);
+        //step2("A+B+C+D+E",5,2);
     }
             
     
