@@ -15,11 +15,11 @@ import java.util.Vector;
  */
 public class Main {
     public static Vector<String> Result1=new Vector<String>();
-    public final static char Operand[]={'A','B','C','D','E','F','G','H','I','J','K','L','M'};
+    public final static char Operand[]={'A','B','C','D','E','F','G','H','I' ,'J','K','L','M'};
     public final static char Operator[]={'$','*','/','+','-'};
-    public final static int  InputSize=3;
-    public final static int MaxP=InputSize-1;            
-    public final static int Slot=InputSize+1;      
+    public final static int  InputSize=5;
+    public static int MaxP=InputSize-1;            
+    public static int Slot=InputSize+1;      
     private static void step1_a_line(Vector<String> dest,int[] index,char[] Letter,char[] OP,int SZ) {
         String ret="";
         for (int i=0; i<SZ-1; i++) {
@@ -50,16 +50,14 @@ public class Main {
             dest[i]=0;
         }
     }
-    public static void step2_a_line(String line,int[] L,int[] R) {
-        final int SZ=InputSize;
-        final int Slot=SZ+1;                
+    public static void step2_a_line(String line,int[] L,int[] R) {                
         String ret="";
-        for (int i=0,m=0; i<=SZ; i++) {
+        for (int i=0,m=0; i<=InputSize; i++) {
             if (i==0) {
                 for (int x=0; x<L[0]; x++) ret+=("(");
                 ret+=(line.charAt(m));
                 m+=2;
-            }else if (i==SZ) {
+            }else if (i==InputSize) {
                 for (int x=0; x<R[Slot-1]; x++) ret+=(")");
                 System.out.println(ret);
                 return;
@@ -89,19 +87,29 @@ public class Main {
         }
         
         Stack<Character> Hand=new Stack<Character>();
-        for (int x=0; x<L[0]; x++) Hand.push('@');
+        Stack<Integer>   Memory=new Stack<Integer>();
+        if (L[0]>0) {
+            Memory.push(L[0]);
+            for (int x=0; x<L[0]; x++) Hand.push('@');
+        }
         for (int i=1; i<=R.length-2; i++) {
             int pop=R[i];
             if (Hand.size()< pop)
+                return false;     
+            if (!Memory.empty() && pop==Memory.peek() && pop>1)
                 return false;
-            for (int x=0; x<pop; x++) Hand.pop();
-            
+            for (int x=0; x<pop; x++) Hand.pop();            
             int push=L[i];
-            for (int x=0; x<push; x++) Hand.push('@');
+            if (L[i]>0) {
+                Memory.push(L[i]);
+                for (int x=0; x<push; x++) Hand.push('@');
+            }
+
         }
         if (Hand.size()< R[R.length-1])
             return false;
-        
+        if (!Memory.empty() && R[R.length-1]==Memory.peek() && R[R.length-1]>1 )
+            return false;
         return true;
     }
     private static boolean ExactlyEqual(int[] thes, int[] that) {
@@ -123,10 +131,13 @@ public class Main {
         return false;
     }
     private static void action(int[] hand,Vector<int[]> Collect) {
+        /* for debugging
         for (int i=0; i<MaxP; i++) {
             System.out.print(""+hand[i]+" ");
         }
         System.out.println();        
+        */
+        
         int[] dest=new int[Slot];
         ClearZero(dest,Slot);
         for (int i=0; i<MaxP; i++) {
@@ -146,9 +157,7 @@ public class Main {
         }
     }
     public static void step2(String line) {
-        final int SZ=InputSize;
-        final int MaxP=SZ-1;
-        final int Slot=SZ+1;
+
         int[] index=new int[MaxP];
         Vector<int[]> CollectL=new Vector<int[]>();
         Vector<int[]> CollectR=new Vector<int[]>();
@@ -159,8 +168,10 @@ public class Main {
             int[] L=CollectL.get(i);            
             for (int j=0; j<CollectR.size(); j++) {
                 int[] R=CollectR.get(j);
-                if (Valid(L,R))
+                if (Valid(L,R)) {
+                    System.out.println("i="+i+"  j="+j);
                     step2_a_line(line,L,R);                                
+                }
             }
         }
 
@@ -172,7 +183,9 @@ public class Main {
     }
     public static void main(String[] args) {
         //step1();
-        step2("A+B+C");
+        //step2("A+B+C");
+        Main.MaxP=1;
+        step2("A+B+C+D+E");
     }
             
     
